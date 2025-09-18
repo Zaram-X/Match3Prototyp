@@ -406,14 +406,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 06706e9055932de47a2e9c2662b16392, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridWidth: 8
-  gridHeight: 8
-  tileSize: 1
-  tilePrefabs:
-  - {fileID: 7865877896835809915, guid: 779b2ae64465c7b45a0a078c99c37811, type: 3}
-  - {fileID: 5683170761208259928, guid: 7552414c373259e478d0db002c301c6b, type: 3}
-  - {fileID: 7853259579542568982, guid: 93aedf43ef6d66844b0f41c765eb9231, type: 3}
-  - {fileID: 756399119135408960, guid: 6dcad5fc75137aa4789836b897c77158, type: 3}
+  settings: {fileID: 11400000, guid: 9da6a733104447b438f85a61aafb8938, type: 2}
 --- !u!4 &1912218464
 Transform:
   m_ObjectHideFlags: 0

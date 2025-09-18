@@ -78,6 +78,31 @@ public class Match3EditorWindow : EditorWindow
                 Debug.Log("Created new settings asset at " + path);
             }
         }
+        GUILayout.Space(10);
+
+        GUILayout.Label("Preset Layout", EditorStyles.boldLabel);
+
+        if (settingsAsset != null)
+        {
+            if (settingsAsset.layout == null ||
+                settingsAsset.layout.Length != gridWidth * gridHeight)
+            {
+                settingsAsset.InitLayout();
+            }
+
+            for (int y = gridHeight - 1; y >= 0; y--)
+            {
+                GUILayout.BeginHorizontal();
+                for (int x = 0; x < gridWidth; x++)
+                {
+                    int index = x + y * gridWidth;
+                    settingsAsset.layout[index] = EditorGUILayout.IntField(settingsAsset.layout[index],
+                    GUILayout.Width(25));
+                }
+                GUILayout.EndHorizontal();
+            }
+        }
+
 
     }
 
