@@ -3,6 +3,12 @@ using UnityEditor;
 
 public class Match3EditorWindow : EditorWindow
 {
+    private bool showGridSettings = true;
+    private bool showPrefabs = true;
+    private bool showSaveLoad = true;
+    private bool showLayout = true;
+
+
     private int gridWidth = 8;
     private int gridHeight = 8;
     private float tileSize = 1f;
@@ -18,50 +24,74 @@ public class Match3EditorWindow : EditorWindow
 
     private void OnGUI()
     {
-        GUILayout.Label("Grid Settings", EditorStyles.boldLabel);
-
-        gridWidth = EditorGUILayout.IntField("Width", gridWidth);
-        gridHeight = EditorGUILayout.IntField("Height", gridHeight);
-        tileSize = EditorGUILayout.FloatField("Tile Size", tileSize);
-
-        GUILayout.Space(10);
-
-        GUILayout.Label("Tile Prefabs", EditorStyles.boldLabel);
-        int newSize = EditorGUILayout.IntField("Size", tilePrefab != null ? tilePrefab.Length : 0);
-
-        if (tilePrefab == null || tilePrefab.Length != newSize)
+        //GUILayout.Label("Grid Settings", EditorStyles.boldLabel);
+        showGridSettings = EditorGUILayout.Foldout(showGridSettings, "Grid Settings", true);
+        if (showGridSettings)
         {
-            tilePrefab = new GameObject[newSize];
-        }
+            gridWidth = EditorGUILayout.IntField(
+             new GUIContent("Width", "Number of columns in the grid"), gridWidth);
 
-        for (int i = 0; i < newSize; i++)
-        {
-            tilePrefab[i] = (GameObject)EditorGUILayout.ObjectField("Prefab " + i, tilePrefab[i], typeof(GameObject), false);
+            gridHeight = EditorGUILayout.IntField(
+                new GUIContent("Height", "Number of rows in the grid"), gridHeight);
+
+            tileSize = EditorGUILayout.FloatField(
+                new GUIContent("Tile Size", "Size of each tile in Unity units"), tileSize);
+
         }
 
         GUILayout.Space(10);
 
-        if (GUILayout.Button("Generate Grid"))
+        //GUILayout.Label("Tile Prefabs", EditorStyles.boldLabel);
+        showPrefabs = EditorGUILayout.Foldout(showPrefabs, "Tile Prefabs", true);
+        if (showPrefabs)
+        {
+            int newSize = EditorGUILayout.IntField("Size", tilePrefab != null ? tilePrefab.Length : 0);
+
+            if (tilePrefab == null || tilePrefab.Length != newSize)
+            {
+                tilePrefab = new GameObject[newSize];
+            }
+
+            for (int i = 0; i < newSize; i++)
+            {
+                tilePrefab[i] = (GameObject)EditorGUILayout.ObjectField(
+                 new GUIContent("Tile Prefab " + (i + 1), "Prefab used for tiles in the grid"),
+                    tilePrefab[i], typeof(GameObject), false);
+
+            }
+        }
+
+        GUILayout.Space(10);
+
+        if (GUILayout.Button(new GUIContent("Generate Grid", "Spawns a temporary preview grid in the scene")))
         {
             GenerateGrid();
         }
 
-        if (GUILayout.Button("Clear Grid"))
+        if (GUILayout.Button(new GUIContent("Clear Grid", "Removes the generated grid from the scene")))
         {
             ClearGrid();
         }
+
         GUILayout.Space(10);
 
-        GUILayout.Label("Save/Load", EditorStyles.boldLabel);
-        settingsAsset = (Match3Settings)EditorGUILayout.ObjectField("Settings Asset", settingsAsset, typeof(Match3Settings), false);
+        //GUILayout.Label("Save/Load", EditorStyles.boldLabel);
+        showSaveLoad = EditorGUILayout.Foldout(showSaveLoad, "Save/Load Settings", true);
+        if (showSaveLoad)
+        {
+            settingsAsset = (Match3Settings)EditorGUILayout.ObjectField(
+             new GUIContent("Settings Asset", "ScriptableObject that stores grid data"),
+                settingsAsset, typeof(Match3Settings), false);
 
-        if (GUILayout.Button("Save Settings") && settingsAsset != null)
-        {
-            SaveSettings();
-        }
-        if (GUILayout.Button("Load Settings") && settingsAsset != null)
-        {
-            LoadSettings();
+
+            if (GUILayout.Button("Save Settings") && settingsAsset != null)
+            {
+                SaveSettings();
+            }
+            if (GUILayout.Button("Load Settings") && settingsAsset != null)
+            {
+                LoadSettings();
+            }
         }
 
         GUILayout.Space(10);
@@ -80,26 +110,46 @@ public class Match3EditorWindow : EditorWindow
         }
         GUILayout.Space(10);
 
-        GUILayout.Label("Preset Layout", EditorStyles.boldLabel);
-
-        if (settingsAsset != null)
+        // GUILayout.Label("Preset Layout", EditorStyles.boldLabel);
+        showLayout = EditorGUILayout.Foldout(showLayout, "Preset Layout", true);
+        if (showLayout)
         {
-            if (settingsAsset.layout == null ||
-                settingsAsset.layout.Length != gridWidth * gridHeight)
+            if (settingsAsset != null)
             {
-                settingsAsset.InitLayout();
-            }
-
-            for (int y = gridHeight - 1; y >= 0; y--)
-            {
-                GUILayout.BeginHorizontal();
-                for (int x = 0; x < gridWidth; x++)
+                if (settingsAsset.layout == null ||
+                    settingsAsset.layout.Length != gridWidth * gridHeight)
                 {
-                    int index = x + y * gridWidth;
-                    settingsAsset.layout[index] = EditorGUILayout.IntField(settingsAsset.layout[index],
-                    GUILayout.Width(25));
+                    settingsAsset.InitLayout();
                 }
-                GUILayout.EndHorizontal();
+
+                // Build prefab name list for dropdowns
+                string[] prefabNames = new string[(tilePrefab != null ? tilePrefab.Length : 0) + 1];
+                prefabNames[0] = "Empty";
+                for (int i = 0; i < (tilePrefab != null ? tilePrefab.Length : 0); i++)
+                {
+                    prefabNames[i + 1] = tilePrefab[i] != null ? tilePrefab[i].name : "Missing Prefab " + i;
+                }
+
+                for (int y = gridHeight - 1; y >= 0; y--)
+                {
+                    GUILayout.BeginHorizontal();
+                    for (int x = 0; x < gridWidth; x++)
+                    {
+                        int index = x + y * gridWidth;
+                        int currentValue = settingsAsset.layout[index];
+
+                        // Convert stored value (-1 for empty, 0+ for prefab index)
+                        int popupIndex = currentValue + 1;
+
+                        // Show dropdown
+                        popupIndex = EditorGUILayout.Popup(popupIndex, prefabNames, GUILayout.Width(70));
+
+                        // Convert back to layout value
+                        settingsAsset.layout[index] = popupIndex - 1;
+
+                    }
+                    GUILayout.EndHorizontal();
+                }
             }
         }
 
@@ -149,26 +199,56 @@ public class Match3EditorWindow : EditorWindow
     }
 
     private void GenerateGrid()
+{
+    if (tilePrefab == null || tilePrefab.Length == 0)
     {
-        if (tilePrefab == null || tilePrefab.Length == 0)
-        {
-            Debug.LogError("Please assign at least one tile prefab.");
-            return;
-        }
+        Debug.LogError("Please assign at least one tile prefab.");
+        return;
+    }
 
-        ClearGrid(); // clear old one first
+    ClearGrid(); // clear old one first
 
-        GameObject parent = new GameObject("Match3Grid");
-        parent.transform.position = Vector3.zero; // keep centered at origin
+    GameObject parent = new GameObject("Match3Grid");
+    parent.transform.position = Vector3.zero; // keep centered at origin
 
-        float offsetX = (gridWidth - 1) * tileSize / 2f;
-        float offsetY = (gridHeight - 1) * tileSize / 2f;
+    float offsetX = (gridWidth - 1) * tileSize / 2f;
+    float offsetY = (gridHeight - 1) * tileSize / 2f;
 
+    for (int y = 0; y < gridHeight; y++)
+    {
         for (int x = 0; x < gridWidth; x++)
         {
-            for (int y = 0; y < gridHeight; y++)
+            int index = x + y * gridWidth;
+            int layoutValue = (settingsAsset != null && settingsAsset.layout.Length > index)
+                ? settingsAsset.layout[index]
+                : -1; // default to random if no layout
+
+            if (layoutValue == -2)
             {
-                GameObject prefab = tilePrefab[Random.Range(0, tilePrefab.Length)];
+                // Empty space → skip
+                continue;
+            }
+
+            GameObject prefab = null;
+
+            if (layoutValue == -1)
+            {
+                // Random tile
+                prefab = tilePrefab[Random.Range(0, tilePrefab.Length)];
+            }
+            else if (layoutValue >= 0 && layoutValue < tilePrefab.Length)
+            {
+                // Specific prefab
+                prefab = tilePrefab[layoutValue];
+            }
+            else
+            {
+                Debug.LogWarning($"Invalid layout value {layoutValue} at ({x},{y})");
+                continue;
+            }
+
+            if (prefab != null)
+            {
                 Vector3 pos = new Vector3(x * tileSize - offsetX, 0, y * tileSize - offsetY);
                 Quaternion rot = Quaternion.Euler(90, 0, 0);
 
@@ -177,9 +257,11 @@ public class Match3EditorWindow : EditorWindow
                 tile.transform.SetPositionAndRotation(pos, rot);
             }
         }
-
-        Selection.activeGameObject = parent;
     }
+
+    Selection.activeGameObject = parent;
+}
+
 
 
 
