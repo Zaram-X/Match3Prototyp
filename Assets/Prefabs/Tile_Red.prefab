@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3312338176164855453}
   - component: {fileID: 122331186950771917}
   - component: {fileID: 7823683625576526935}
+  - component: {fileID: -3409359840782465859}
   m_Layer: 0
   m_Name: Tile_Red
   m_TagString: Untagged
@@ -106,5 +107,22 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 1, y: 0.99999964, z: 1.3040404}
+  m_Center: {x: 0, y: 3.7070138e-16, z: -0.15201999}
+--- !u!114 &-3409359840782465859
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7853259579542568982}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbc80ad82f3afc54d8542577fe2cb517, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  x: 0
+  y: 0
+  gridManager: {fileID: 0}
+  tileType: Red
+  originalColor: {r: 0, g: 0, b: 0, a: 0}
